@@ -23,7 +23,9 @@ screen reader" width="42" height="42"></img> - Image (of 42 X 42 pixels)
 is from the directory of the current HTML file UNLESS the path beings http:// or 
 https:// in which case it will take you through the link
 
-<form method="POST"> - Form tag. Method attribute is optional. Default is GET in which case form parameters appear in URL (unsecure)
+<form method="POST"> - Form tag. Method attribute is optional. Default is  
+    GET in which case form parameters appear in URL (unsecure)
+
     Input tags (Self closing): 
     <input type="text" name="fieldName" required> - Type text entry. Required  
     is optional.
@@ -31,7 +33,8 @@ https:// in which case it will take you through the link
     <input type="email" required> - Type email. Checks email is as expected on 
      submit.  E.g. contains @ symbol.
 
-    <input type="password" minlength="8"> - Type password. Values obscured.  minlength optional attribute.
+    <input type="password" minlength="8"> - Type password. Values obscured. 
+      minlength optional attribute.
 
     <input type="date"> - Type date, gives date dropdown.
 
