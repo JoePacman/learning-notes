@@ -90,8 +90,7 @@ and the most common way is defining with a **class** tag, where the selectors be
 }
 ```
 
-There is also the * which is not used very often. It applies to everything (unless cascading  
-over rides it)
+There is also the * which is not used very often. It applies to everything (unless cascading over rides it)
 ``` css
 * {
     text-align: right:
@@ -136,6 +135,13 @@ Which selector wins out in the cascade depends on:
 ```css
 example-selector{
     text-align: center; /* alignment */
+    text-decoration: underline; /* includes line through and other props */
+    text-transform: uppercase; /* includes lower case too and other props */
+    line-height: 20px; /* pixels of lines height */
+    font-style: italic; /* italics */
+    font-weight: bold; /* bold */
+    font-size: 80%; /* adjust font size */
+    font-family: "Times New Roman", "Georgia"; /* font type. Can have multiple. If the PC doesn't have a font it tries the next */
     border: 5px solid purple; /* border*/
     background-image: url(myimage.jpg); /* background image*/
     background-size: cover; /* fit background image */
@@ -143,11 +149,54 @@ example-selector{
     color: #AA4139; /* colour code */
     color: rgb(0, 255, 0); /* RGB colour*/
     color: rgba(0, 255, 0, 0); /* RGB colour. Fouth number is degree of transparency */
+
+    font-size: 20px; /* 20 pixel size */
+    font-size: 5em; /* 5 times the font size of the containing element's font size */
+    font-size: 2rem /* size in relation to size of the route element */
 }
 
 li {
     list-style: none; /* style of list icons */
     display: block; /* for lists. inline-block makes list items appear in line */
 }
+
+img {
+    float: right; /* right or left. Floats image in direction, and text wraps around */
+    /* generally best to just use with images, has some odd properties */
+}
+
+footer {
+    clear: both; /* would ignore the float above */
+}
 ```
 
+What if a user doesn't have the font you want on their PC?
+
+Google fonts are frequently used.
+Define it in the header:
+``` html
+<link href="http://fonts.googleapis.com/css?family=Poiret+one" rel="stylesheet">
+```
+And add to your CSS
+``` css
+.webtext {
+    font-family: 'Poiret One', cursive;
+}
+```
+Note that this slows a website as its waiting on an API call.
+ 
+
+## The Box Model
+
+Very common properties you will use a lot and can see in developer tools.
+### Margin > Border > Padding > Content
+
+``` css
+.boxmodel{
+    border: 5px solid red;
+    display: inline-block;
+    padding: 5px 20px 5px 20px; /* top right bottom left */
+    margin: 5px; /* space outside of the border. all around */
+    margin: 0px 20px 0px 20px; /* top right bottom left */
+}
+```
