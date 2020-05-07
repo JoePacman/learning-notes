@@ -1,7 +1,7 @@
 # Golang notes
 *following https://tour.golang.org/welcome/1*
 
-## BASICS
+## Basics
 
 **Capitalised variables are exported. Lower case are not**
 ``` go
@@ -65,7 +65,7 @@ const (
 Constants cannot be initialised to a variables value. They are initialised at  
 compile time.
 
-**Basic types in Go**
+## Basic types
 ``` go
 bool //if uninitialised 'zero' value is false
 
@@ -87,3 +87,123 @@ complex64 complex128 //complex #s containing a real and imaginary part
 
 // if uninitialised 'zero' value of all numeric types is 0
 ```
+
+## Loops, Conditionals:
+
+## For
+``` go
+// init; condition; post;
+for i := 0; i < 10; i++ {
+		// do stuff
+    }
+
+// the init and post statement are optional
+for ; sum < 1000; {
+	sum += sum
+}
+
+// but you would generally right the above as
+for sum < 1000 {
+	sum += sum
+}
+// which is Go's version of while
+```
+## If
+``` go
+// simple if
+if x < 0 {
+	// do stuff
+}
+
+// if with init statement (as in for) is allowed
+if v := math.Pow(x, n); v < lim {
+		return v
+	} else {
+        // variables declared in if are also available in else
+    }
+```
+## Switches
+``` go
+	switch os := runtime.GOOS; os {
+	case "darwin":
+        fmt.Println("OS X.")
+        // switches in Go only run the case, they don't need a break statement as in Java/ other langs.
+	case "linux":
+		fmt.Println("Linux.")
+	default:
+		// freebsd, openbsd,
+		// plan9, windows...
+		fmt.Printf("%s.\n", os)
+    }
+
+// switches without a statement are a clean way of doing a long if-then-else chain
+	t := time.Now()
+	switch {
+	case t.Hour() < 12:
+		fmt.Println("Good morning!")
+	case t.Hour() < 17:
+		fmt.Println("Good afternoon.")
+	default:
+		fmt.Println("Good evening.")
+    }
+```
+
+## The defer statement
+The defer statement only executes after the function call has been completed.
+However its arguments are evaluated immediately.
+
+``` go
+func main() {
+	defer fmt.Println("world")
+
+	fmt.Println("hello")
+}
+```
+
+ 
+## Data structures:
+
+## Pointers
+
+The * operator denotes the pointer's underlying value.
+ 
+ The & operator generators a pointer to an operand
+
+``` go
+i := 42
+p = &i
+fmt.Println(*p) // read i through the pointer p. Prints 42
+*p = 21         // set i through the pointer p
+// this is known as dereferncing or indirecting
+fmt.Println(i) // prints 21
+```
+
+## A struct is a collection of fields
+``` go
+type Vertex struct {
+	X int
+	Y int
+}
+```
+when referencing a field value in a struct, Go allows us to not use a pointer as the notation would be cumbersome
+``` go
+func main() {
+	v := Vertex{1, 2}
+	p := &v
+	p.X = 1e9 // allowed rather than (*p).X (which still works)
+	fmt.Println(v)
+}
+```
+
+Struct literals denote a newly allocated struct value by listing the values of its fields:
+``` go
+var (
+	v1 = Vertex{1, 2}  // has type Vertex
+	v2 = Vertex{X: 1}  // Y:0 is implicit
+	v3 = Vertex{}      // X:0 and Y:0
+)
+```
+
+## Arrays
+
+

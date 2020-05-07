@@ -1,4 +1,5 @@
 # CSS learning notes
+Following course https://www.udemy.com/course/the-complete-web-developer-zero-to-mastery/
 
 ## Basic concepts
 The basic structure of all CSS in .css files is 
