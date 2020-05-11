@@ -206,4 +206,198 @@ var (
 
 ## Arrays
 
+Arrays have a **FIXED** size.
 
+``` go
+var a[2]string //array declaration. Size 2
+a[0] = "Hello"
+a[1] = "World"
+
+b := [2]string{"good", "morning"} //in line. This is called a 'literal'
+```
+
+## Slices
+
+Slices are **DYNAMICALLY SIZED** flexible views into the elements of an array.
+
+``` go
+primes := [6]int{2, 3, 5, 7, 11, 13}
+var s []int = primes[1:4] //slice
+fmt.Println(s)
+
+// prints [3, 5, 7]
+s[0] = 0
+fmt.Println(primes)
+//prints [2 0 5 7 11 13]
+
+// values can be omitted e.g.
+fmt.Println(primes[:3])
+//prints [2 0 5]
+
+//this creates an array and then builds a slice that references it
+c := []bool{true, true, false}
+```
+As you can see in the above altering a slice, alters the underlying array elements.
+
+Slices have length and capcity. 
+ 
+Length is the number of elements contained in the slice.
+Capacity is the number of elements in the underlying array.
+
+``` go
+// The built-in make function can be used to create dynamically sized arrays and return a slice that refers to that array.
+a := make([]int, 5)  // len(a)=5
+b := make([]int, 0, 5) // len(b)=0, cap(b)=5
+```
+
+Slices can contain any type, e.g. another slice
+``` go
+board := [][]string{
+	[]string{"_", "_", "_"},
+	[]string{"_", "_", "_"},
+	[]string{"_", "_", "_"},
+}
+
+board[0][0] = "X"
+fmt.Println(board) // [[X _ _] [_ _ _] [_ _ _]]
+```
+More than one element can be appended to a slice
+``` go
+	var s []int
+
+	// append works on nil slices.
+	s = append(s, 0)
+	printSlice(s) // [0]
+
+	// We can add more than one element at a time.
+	s = append(s, 2, 3, 4)
+	printSlice(s) // [0, 2, 3, 4]
+```
+
+## Range
+
+The range form of the for loop iterates over a slice or map.  
+
+When ranging over a slice, two values are returned for each iteration. The first is the index, and the second is a copy of the element at that index.
+
+```go
+var pow = []int{1, 2, 4, 8, 16, 32, 64, 128}
+
+func main() {
+	for i, v := range pow {
+		fmt.Printf(" index: %d, value: %d \n", i, v)
+	}
+}
+/*
+prints:
+	index: 0, value: 1 
+ 	index: 1, value: 2 
+ 	index: 2, value: 4 
+ 	index: 3, value: 8 
+ 	index: 4, value: 16 
+ 	index: 5, value: 32 
+ 	index: 6, value: 64 
+ 	index: 7, value: 128
+ */
+```
+The index or value can be ommited with _.
+
+## Maps
+Maps map keys to values
+``` go
+
+type Vertex struct {
+	Lat, Long float64
+}
+
+var m map[string]Vertex
+
+func main() {
+	m = make(map[string]Vertex)
+	m["Bell Labs"] = Vertex{
+		40.68433, -74.39967,
+	}
+	fmt.Println(m["Bell Labs"])
+	// prints {40.68433 -74.39967}
+}
+
+```
+
+Insert or update an element in map m:
+``` go 
+m[key] = elem
+```
+
+Retrieve an element:
+``` go 
+elem = m[key]
+```
+
+Delete an element:
+``` go 
+delete(m, key)
+```
+
+Test that a key is present with a two-value assignment:
+``` go 
+elem, ok = m[key]
+```
+If key is in m, ok is true. If not, ok is false.
+
+## Functions
+
+Functions are values and can be passed around like values.
+
+``` go
+
+func compute(fn func(float64, float64) float64) float64 {
+	return fn(3, 4)
+}
+
+func main() {
+	hypot := func(x, y float64) float64 {
+		return math.Sqrt(x*x + y*y)
+	}
+
+	fmt.Println(compute(hypot)) // (9 + 16)^0.5 = 5
+}
+
+```
+
+Go functions may be closures.  
+A closure is a function value that references variables from outside its body.  
+The function may access and assign to the referenced variables;  
+in this sense the function is "bound" to the variables.
+
+Read this: https://stackoverflow.com/questions/36636/what-is-a-closure
+
+``` go
+func adder() func(int) int {
+	sum := 0
+	return func(x int) int {
+		sum += x
+		fmt.Println(sum)
+		return sum
+	}
+}
+
+func main() {
+	pos := adder()
+	// 	pos, neg := adder(), adder()
+	for i := 0; i < 10; i++ {
+		pos(i)
+	}
+}
+/* prints 
+0
+1
+3
+6
+10
+15
+21
+28
+36
+45
+*/
+```
