@@ -20,6 +20,8 @@ Following course https://www.udemy.com/course/the-complete-web-developer-zero-to
 
 <br> - Break. Self closing (no </br>)
 
+<hr> - Horizontal line
+
 <img src="URL/ path to image source" alt="Alternative text for image, e.g. for 
 screen reader" width="42" height="42"></img> - Image (of 42 X 42 pixels)
 

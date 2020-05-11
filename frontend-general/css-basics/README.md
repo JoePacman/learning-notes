@@ -201,3 +201,46 @@ Very common properties you will use a lot and can see in developer tools.
     margin: 0px 20px 0px 20px; /* top right bottom left */
 }
 ```
+
+## CSS minify
+
+A common technique to increase website responsiveness is to use a minify tool  
+which reduces a css file into a single line by removing all whitespace.
+
+## Flexbox
+
+Flexbox is a really useful css toolbox that is commonly used.
+
+See https://css-tricks.com/snippets/css/a-guide-to-flexbox/
+
+To enable:
+
+``` css
+.container {
+    display:flex; /* this is the command which will import flexbox */
+    flex-wrap: wrap;
+}
+
+```
+A good way to get good at flexbox is this website https://flexboxfroggy.com/
+
+
+## CSS3
+
+Some cool CSS3 properties:
+
+```css
+img {
+    transition: al 1s; /* how long before dynamic features enable */
+}
+
+img:hover{
+    transform: scale(1, 1);
+}
+```
+
+This is a great website for mastering some of these more dynamic properties:
+https://thoughtbot.com/blog/transitions-and-transforms
+
+Note that some properties e.g. transition above may not be supported by all browsers.
+This is a great website to check support for different toolboxes: https://caniuse.com/
