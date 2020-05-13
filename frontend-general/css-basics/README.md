@@ -244,3 +244,45 @@ https://thoughtbot.com/blog/transitions-and-transforms
 
 Note that some properties e.g. transition above may not be supported by all browsers.
 This is a great website to check support for different toolboxes: https://caniuse.com/
+
+## CSS Grid
+They way CSS grid is similar to flexbox. Add in .container.
+
+``` css
+.container {
+    display: grid;
+
+    grid-template-columns: 300px 300px 300px; /* Size of grid. 3 columns 300px each column */
+    grid-template-columns: 25% 25% 25%; /* 4 columns. Each 25% of page */
+    grid-template-columns: 1fr 1fr; /*RECOMMENDED automatic resizing. Fractions of page */
+    grid-template-columns: repeat(3, 1fr); /* equivalent to 1fr 1fr 1fr */
+    grid-template-rows 1fr 2fr; /* Second row twice as big as first. This will start repeating if there are many items */
+    grid-template-rows: auto 1fr 2fr; /* auto resizes to fit content, then 1fr 2fr after */
+    /* Probably the most common pattern in CSS grid: */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) /* Adjusts/ autofills according to size of viewpoint in a better way */
+    /* MinMax defines the min max size a box can be. You could set something like 300px instead of minmax(...) but then it wouldn't be 'completely responsive'*/
+
+    justify-items: end;  /* where to align the object horizontally within its grid box */
+    align-items: end;  /* where to align the object vertically within its grid box */
+
+    gap: 20px; /* Gap between grid items */
+}
+
+.special {
+    /* Special grid element that will appear twice width. CSS grid counting goes start, end, start, end (to allow for gaps)*/
+    grid-column-start: 1;
+    grid-column-end: 3;
+    /* shorthand for the above */
+    grid-column: 1/3;
+    /* -1 means all the way to the end*/
+    grid-column: 1/-1;
+    /* span across 2 grids */
+    grid-column: span 2;
+
+    /* the same can be done with rows */
+    grid-rows: 1/3;
+}
+```
+
+This is a great website as a cheat sheet for different CSS grid configs: http://grid.malven.co/
+
