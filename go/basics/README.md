@@ -1,7 +1,7 @@
 # Golang notes
 *following https://tour.golang.org/welcome/1*
 
-## Basics
+# Basics
 
 **Capitalised variables are exported. Lower case are not**
 ``` go
@@ -401,3 +401,4 @@ func main() {
 45
 */
 ```
+
