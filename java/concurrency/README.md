@@ -145,7 +145,7 @@ However it does not guarantee when the loop will terminate.
 
 The ``ExecutorService`` creates and manages threads for you.
 ``SingleThreadExectuor`` is the simplest ExecutorService and guarantees results are executed in the order in which they were added to the executor service.
-Example matching letters and numbers printing:
+Example with letters and numbers printing:
 
 ``` java
 public class Printer {
@@ -307,5 +307,121 @@ task2 will happen 8 minutes in the future.
 For ``Runnable`` only ``scheduleAtFixedRate(...)`` and ``scheduleAtFixedDelay(...)`` are also possible.
  
 ScheduleAtFixedDelay ensures creates a new task after the previous task has finished.  
-This prevents a potential problem with scheduleAtFixedRate where a new task starts before the last has finished.
+This prevents a potential problem with scheduleAtFixedRate where a new task starts before the last has finished.  
+
+Otherwise ScheduleAtFixedRate is the closest Java has to a cronjob.
+
+## Thread Pools
+
+A *thread pool* is a group of pre-instantiated reusable threads that are available to perform a set of arbitrary tasks.
+
+Some types of ThreadPool:
+* ``newCachedThreadPool()`` - returns an ``ExecutorService`` - TP that creates new threads as needed, but will reuse previos threads when available.
+* ``newFixedThreadPool(int nThreads)`` - returns an ``ExecutorService`` - TP that reuses a fixed number of threads operating off a shared unbounded queue.
+* ``newScheduledThreadPool(int nThreads)`` - returns a ``ScheduledExecutorService`` - TP that can schedule commands to run after a given delay or execute periodically.
+
+Single thread executors wait for an available thread to become available before running the next task.
+Pooled thread executors can execute the next task concurrently, and if the pool runs out of available thread, the task will be queued by the thread executor and wait to be completed.
+
+Otherwise our previous example are compatible with pooled thread executors.
+
+Some health notes:
+``newCachedThreadPool()`` are often used for short lived asynchronous tasks. For long lived processes they are strongly discouraged.
+``newFixedThreadPool(1)`` is just a ``newSingleThreadExecutor()``.
+
+It is common practise to assign the maximum number of long lived threads to the number of available CPUs:
+``Runtime.getRuntime().availableProcessors()``
+
+## Synchronizing Data Access
+Now that we have multiple threads capable of accessing the same objects in memory, we have to make sure to organize our access to this data correctly.  
+How do we prevent 2 threads from interfering with each other?
+
+The unexpected result of two tasks executing at the same time is called a *race condition*.
+
+In Java ``Atomic`` classes solve this problem. Thread safe atomic classes only allow reading and writing as a single operation.
+
+This doesn't allow any other thread to access the variable during the operation.
+
+Operations like this include ``get()``, ``getAndIncrement()``, ``getAndSet()``.
+
+There are primitive equivalent classes like ``AtomicInteger`` but also collection ones suchas ``AtomicIntegerArray``.
+
+*Here's a counting example without Atomic:*
+
+``` java
+public class Counter {
+    
+    private int count = 0;
+
+    private void incAndPrint() {
+        System.out.println(++count);
+    }
+
+    public static void main(String[] args) {
+        ExecutorService service = null;
+        try{
+            service = Executors.newFixedThreadPool(20);
+            Counter counter = new Counter();
+            for(int i= 0; i < 10; i++){
+                service.submit(() -> counter.incAndPrint());
+            }
+        } finally {
+            if(service != null) service.shutdown();
+        }
+    }
+}
+```
+Will print duplicates and could miss values (but will print 10 values):
+```
+1 2 2 3 4 5 6 7 8 9
+2 4 5 6 7 8 1 9 10 3
+```
+
+*Now adding in an Atomic integer:*
+``` java
+...
+    private AtomicInteger count = new AtomicInteger(0);
+
+    private void incAndPrint() {
+        System.out.println(count.incrementAndGet());
+    }
+...
+```
+Will print no duplicates and miss no values, but the results might not be ordered:
+```
+2 3 1 4 5 6 7 8 9 10
+1 4 3 5 6 2 7 8 10 9
+```
+
+Atomic ensures data is consistent between workers and no values are lost due to concurrent modifications.
+
+To make results are reported back in order we can use a *lock* with the ``synchronized`` keyword.
+
+Using this in the above example would make the following replacements:
+
+``` java
+    private int sheepCount = 0; //Atomic not needed with synchronized here 
+
+    private void incAndPrint() {
+        synchronized(this){
+            System.out.println(++count);
+        }
+    }
+```
+which will print the following :)
+```
+1 2 3 4 5 6 7 8 9 10
+```
+The threads are still created and executed at the same time, but each waits at the ``synchronized`` block for the previous worker before entering.
+
+Java provides another way of writing this as well:
+``` java
+private synchronized void incAndPrint(){
+    System.out.println(++count);
+}
+```
+
+The synchronized keyword can also be added to static methods.
+
+*What is the cost of synchronization??*
 
