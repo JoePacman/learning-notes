@@ -109,7 +109,7 @@ c
 end
 ```
 
-## Polling with Sleep
+### Polling with Sleep
 
 *Polling* is the process of intermittently checking data at some fixed interval. 
 
@@ -266,7 +266,7 @@ public class AddData {
 
  ## Waiting for tasks to finish
  A seen previously ``get()`` on a Future can be used to wait for results.  
- However if we don't need the results of the traks and are finished using our thread executor there is a simpler approach:
+ However if we don't need the results of the tasks and are finished using our thread executor there is a simpler approach:
 
 ``` java
 ExecutorService service = null;
@@ -424,4 +424,7 @@ private synchronized void incAndPrint(){
 The synchronized keyword can also be added to static methods.
 
 *What is the cost of synchronization??*
+Multi threaded programming is about taking multiple threads and making them do multiple things at the same time. Synchronization is about taking multiple threads and making them perform in a more single-threaded manner. In extreame situations synchronization could significantly slow down an application.
+
+## Concurrent Collections
 
