@@ -428,3 +428,262 @@ Multi threaded programming is about taking multiple threads and making them do m
 
 ## Concurrent Collections
 
+There are alternatives to the core Java collection classes to prevent you from having to do something like this and making mistakes with your custom implementation.
+
+``` java
+private Map<String, Object> map = new HashMap<String, Object>();
+
+public synchronized void put(String key, Object value){
+    map.put(key, value);
+}
+```
+
+now we can just have:
+
+``` java
+private Map<String, Object> map = new ConcurrenHashMap<String, Object>();
+map.put(..., ...);
+```
+Using these lower our risks of a ``ConcurrentModificationException``.
+
+There are also method for obtaining synchronized versions of existing non-concurrent collections.
+
+e.g.
+``` java
+List<Integer> list = Collections.synchronizedList(New ArrayList<>(Arrays.asList(4, 3, 52)));
+```
+
+A couple of the more interesting ones to understand:
+
+### Blocking Queues
+
+``LinkedBlockingQueuee`` inheritr all method from queue but also has methods that will wait a specific amount of time to complete an operation.
+
+``.offer(E e, long timeout, TimUnit unit)`` - add item to queue waiting the specified time returning false if time elapses before space is available.
+
+``.poll(long timeout, TimeUnit unit)`` - retrieves and removes an item from the queue waiting the specified time and returning null if the time elapses before the item is available.
+
+These methods can throw an ``InterruptedException`` as they can be interrupted before they finish waiting for a result.
+
+### SkipList Collections
+``ConcurrentSkipeListSet`` and ``ConcurentSkipListMap`` are concurrent versrions of ``TreeSet`` and ``TreeMap``.
+
+## CopyOnWritCollections
+``CopyOnWriteArrayList`` and ``CopyOnWriteArraySet`` behave a bit differently to some of the above. Any time an lmnt is modfied they copy all their elements to a new underlying structure. Our reference to the object does not change.
+
+One interesting thing this allows is a different iteration behaviour:
+
+``` java
+List<Integer> list = new CopyOnWriteArrayList<>(Arrays.asList(4, 3 , 52));
+for (Integer x: list){
+    System.out.println(x)
+    list.add(1);
+}
+System.out.println("Size: " + list.size());
+```
+```
+4
+3
+52
+Size: 6
+```
+
+WARNING: these classes can use a lot of memory. They are commonly used in multi-threaded environments where reads are far more common than writes.
+
+## Parallel Streams
+
+A *serial stream* is a stream where the results are ordered and processed one at a time.
+
+A *parallel stream* is a streaem that is capable of processing results concurrently using multiple threads.
+
+They can be created as so:
+
+``` java
+Stream<Integer> parallelStream = stream.parallel(); //method 1
+Stream<Integer> parallelStream2 = Arrays.asList(1,2,3,4,5,6).parallelStream(); //method 2
+```
+
+comparing simple streams:
+
+``` java
+Arrays.asList(1,2,3,4,5,6)
+    .stream()
+    .forEach(s -> System.out.println(s + " ");)
+```
+```
+1 2 3 4 5 6
+```
+``` java
+Arrays.asList(1,2,3,4,5,6)
+    .parallelStream()
+    .forEach(s -> System.out.println(s + " ");)
+```
+```
+6 2 3 1 5 4
+```
+Could be any other order!
+``` java
+Arrays.asList(1,2,3,4,5,6)
+    .parallelStream()
+    .forEachOrdered(s -> System.out.println(s + " ");)
+```
+```
+1 2 3 4 5 6
+```
+``forEachOrdered`` forces ordering in that specific part of the parallel stream.
+
+This has obvious performance losses but is really useful in allowing part of the stream to be ordered while other parts can still get the performance imporvements of threading.
+Some things to note:
+* *Stateful lambda expressions* should be avoided. These are ones where the result depends on any state that might change during the execution of the pipeline.
+* *Order based tasks* can behave weirdly. e.g. ``.findAny()`` consistently outputs the first value in the serial stream equivalent of the parallel stream. (i.e. 1 in [1, 2, 3]). Any stream operation that is based on order including ``.findFirst()``, ``.limit()``, ``skip`` will return consistently with that of a serial stream but may **perform slower**.
+* Methods like ``reduce()`` and ``collect()`` require additional parameters in parallel streams -  *identity*, *accumulator* and *combiner*.
+
+## Managing Concurrent Processes
+
+### Cyclic Barriers
+A cyclic barrier allows threads to pause and wait for each other at the end of a task/ set of tasks before starting on the next bit of work.
+
+Here's an example where we have 4 zoo workers who we want to work together to clean an animal pen.
+
+``` java
+public class LionPenManager {
+
+    private void removeAnimals() {System.out.println("Removing animals");}
+    private void cleanPen(){System.out.println("Cleaning the pen");}
+    private void addAnimals(){System.out.println("Adding animals");}
+
+    public void performTask(CyclicBarrier c1, CyclicBarrier c2){
+        try {
+            removeAnimals();
+            c1.await();
+            cleanPen();
+            c2.await();
+            addAnimals();
+        } catch (INterruptedExceptio | BrokenBarrierException e){
+            // handle
+        }
+    }
+
+    public void static main(String[] args) {
+        ExecutorService service = null;
+        try {
+            service = Execturos.newFixedThreadPool(4);
+
+            LionPenManager manager = new LionPenManager();
+            CyclicBarrier c1 = new CyclicBarrier(4, 
+                () -> System.out.println"*** Animals Removed!"));
+            CyclicBarrier c2 = new CycliceBarrier(4,
+                () -> System.out.println"*** PenCleaned!"));
+            for(int i=0; i<4; i++){
+                service.submit(() -> manager.performTask(c1, c2));
+            } finally {
+                if(service != null) service.shutdown();
+            }
+        }
+    }
+}
+```
+```
+Removing animals
+Removing animals
+Removing animals
+Removing animals
+*** Animals Removed!
+Cleaning the pen
+Cleaning the pen
+Cleaning the pen
+Cleaning the pen
+*** PenCleaned!
+Adding animals
+Adding animals
+Adding animals
+Adding animals
+```
+
+If using a thread pool. The number of available threads must be at least as large as the CyclicBarrier limit value.  Otherwise the code will hang indefinitely!
+
+A slight loss of performance can be expected from using a CyclicBarrier as one slow may be much slower and the rest must wait for it.
+
+**Reuse: if we have 15 threads that call ``await()`` and the limit of the ``CyclicBarrier`` is 5 the cyclic barrier will be activated 3 times.**
+### Fork/ Join
+
+When a task gets too complicated we can split the task into multiple other tasks using fork/join which will determine how many threads to create. Fork/Join use the concept of recursion where the task calls itself.
+
+The key classes for fork/join are ``RecursiveAction`` and ``RecursiveTask`` which implement the ``ForkJoinTask`` interface.
+
+Both classes are abstract, and require implementation of ``compute()`` but ``RecursiveTask`` is also generic and ``compute()`` returns a generic wheras for ``RecursiveAction`` it returns ``void``. They are analagous to ``Runnable`` and ``Callable``.
+
+Here is another Zoo based example. There are 10 animals to weight in an hour, but each zookeeper can only weigh 3 animals an hour.
+
+``` java
+public class WeighAnimalAction extends RecursiveAction {
+    private int start;
+    private int end;
+    private Double[] weights;
+    public WeighAnimalAction(Double[] weights, int start, int end) {
+        this.start = start;
+        this.end = end;
+        this.weights = weights;
+    }
+    
+    protected void compute() {
+    if(end - start <= 3) // each zoo keeper can only weigh 3 an hour
+        // start weighing
+        for(int i=start; i<end; i++) {
+            weights[i] = (double)new Random().nextInt(100); // random animal weight
+            System.out.println("Animal Weighed: "+i);
+        }
+    else {
+        int middle = start+((end-start)/2);
+        System.out.println("[start="+start+",middle="+middle+",end="+end+"]");
+        invokeAll(
+            new WeighAnimalAction(weights,start,middle),
+            new WeighAnimalAction(weights,middle,end));
+        } // this is the recursive part
+    }
+}
+
+public static void main(String[] args) {
+    Double[] weights = new Double[10];
+    ForkJoinTask<?> task = new WeighAnimalAction(weights,0,weights.length);
+    ForkJoinPool pool pool = new ForkJoinPool();
+    pool.invoke(task);
+    
+    // Print results
+    System.out.print("Weights: ");
+    Arrays.asList(weights).stream().forEach(
+    d -> System.out.print(d.intValue()+" "));
+}
+```
+```
+[start=0,middle=5,end=10]
+[start=0,middle=2,end=5]
+Animal Weighed: 0
+Animal Weighed: 2
+[start=5,middle=7,end=10]
+Animal Weighed: 1
+Animal Weighed: 3
+Animal Weighed: 5
+Animal Weighed: 6
+Animal Weighed: 7
+Animal Weighed: 8
+Animal Weighed: 9
+Animal Weighed: 4
+Weights: 94 73 8 92 75 63 76 60 73 3
+```
+Some fork/ join methods to be aware of:
+
+The ``invokeAll()`` method taks two instances of the fork/join class and does not return a result.
+
+The ``fork()`` method causes a new task to be submitted to the pool and is similar to the thread executor ``submit()`` method.
+
+The ``join()`` method is called after the ``frok()`` method and causes the current thread to wait for the results of a subtask.
+
+## Threading problems
+**Deadlock** occurs when tow or more threads are blocked forever, each waiting on the other. There are some common strategies to avoid deadlocks such as for threads to order their resource requests. There are also some advanced techniques to try to detect adn resolve them in real time but these are very difficult to implement and have limited success generally.
+
+**Starvation** is whena  single thread is perpetually denied access to a shared resource or lock.
+
+**Livelock** is when two or more threads are conceptually blocked forever although they are still active and trying to complete their task. Its often the result of two threads trying to resolve a deadlock. Its often very difficult to detect.
+
+
