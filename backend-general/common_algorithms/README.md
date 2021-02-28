@@ -82,7 +82,7 @@ A hash is not ‘encryption’ – it cannot be decrypted back to the original.
 
 It allows you to quickly compare two files / objects by calculating their hash values.
 
-![Example2](image3.png)
+![Example3](image3.png)
 
 **SHA-256** is a commonly used hashing algorithm.
 
@@ -139,3 +139,100 @@ If the intermediate subproblems are not overlapping, then we have just a case of
 // TODO
 
 Keep going through https://towardsdatascience.com/top-algorithms-and-data-structures-you-really-need-to-know-ab9a2a91c7b5
+
+## Algorithm example - Two pointer technique (sorting algorithm)
+
+Two pointers is really an easy and effective technique which is typically used for searching pairs in a sorted array.
+
+The idea is to sort the array, and then work through it from either side, changing which side is 'shortened' depending on the outcome of the analysis.
+
+
+
+A visual example:
+
+![Example4](image4.png)
+
+
+### Example 3sum closest
+Given an array of integers, A1, A2, ..., An, including negatives and positives, and another integer S. Now we need to find three different integers in the array, whose sum is closest to the given integer S*
+
+This is an example of an algorithm that we could brute force in `O(n^3)` (loop through each value 3 times), but that can be rewritten to be an `O(n^2)` complexity sorting algorithm.
+
+In `O(n^3)` (three loops):
+
+```java
+public static void main(String[] args) {
+  int[] values = {1, 3, 5, -7, -2, 5, 20, 11, 1, 3, -5, 8, 9};
+  threeSumClosest(values, 17);
+}
+
+private static int threeSumClosest(int[] values, int target){
+  int closest = values[0] + values[1] + values[2];
+  for (int i = 0; i < values.length; i++) {
+    for (int j = 0; j < values.length; j++) {
+      if(i == j){
+        continue; // so we don't count identical indexes twice / thrice
+      }
+      for (int k = 0; k < values.length; k++) {
+        if(i == k || j == k){
+          continue; // so we don't count identical indexes twice / thrice
+        }
+        int sum = values[i] + values[j] + values[k];
+        int distance = Math.abs(target - (values[i] + values[j] + values[k]));
+        if(distance == 0) return sum;
+        int closestDistance = Math.abs(target - closest);
+        if (distance < closestDistance){
+          System.out.println(String.format("NEW closest i = %s, j = %s, k = %s", values[i], values[j], values[k]));
+          closest = sum;
+        }
+      }
+    }
+  }
+  return closest;
+}
+```
+```
+NEW closest i = 1, j = 3, k = 20
+NEW closest i = 1, j = 3, k = 11
+NEW closest i = 1, j = 5, k = 11
+```
+
+In `O(n^2)`:
+
+```java
+public int threeSumClosest(int[] values, int target) {
+    int min = Integer.MAX_VALUE; // cannot have a distance greater than this (so start here)
+	int result = 0;
+ 
+	Arrays.sort(values);
+ 
+	for (int i = 0; i < values.length; i++) {
+		int j = i + 1;
+		int k = values.length - 1;
+		while (j < k) {
+			int sum = values[i] + values[j] + values[k];
+			int diff = Math.abs(sum - target);
+ 
+			if(diff == 0) return sum;
+ 
+			if (diff < min) {
+				min = diff;
+				result = sum;
+			}
+			if (sum <= target) {
+				j++;
+			} else {
+				k--;
+			}
+		}
+	}
+ 
+	return result;
+}
+
+```
+
+Once we get to a `values[j]` for a certain `values[i]`/ `values[k]` that lead to our `sum` being greater than the target, decrement `values[k]`. 
+If we go through all `values[j]` for a certain `values[i]`/ `values[k]` without exceeding the target, we should increment `values[i]`
+
+
