@@ -130,6 +130,38 @@ Dynamic programming is a paradigm for solving optimization problems. It consists
 
 If the intermediate subproblems are not overlapping, then we have just a case of using Divide and Conquer.
 
+Example of dynamic programming: *A robot is located at the top-left corner of a m x n grid. It can only move either down or right at any point in time. The robot is trying to reach the bottom-right corner of the grid. How many possible unique paths are there?*
+
+```java
+public int uniquePaths(int m, int n) {
+    if(m==0 || n==0) return 0;
+    if(m==1 || n==1) return 1;
+  
+    int[][] dp = new int[m][n];
+  
+    //left column - only 1 route to end from any of these positions
+    for(int i=0; i<m; i++){
+        dp[i][0] = 1;
+    }
+  
+    //top row - only 1 route to end from any of these positions
+    for(int j=0; j<n; j++){
+        dp[0][j] = 1;
+    }
+  
+    //fill up the dp table - calculating based on surrounding route numbers
+    for(int i=1; i<m; i++){
+        for(int j=1; j<n; j++){
+            dp[i][j] = dp[i-1][j] + dp[i][j-1];
+        }
+    }
+  
+    return dp[m-1][n-1];
+}
+```
+
+The table contains the number of paths there are from each position. For each step back you count the number to the top and right of it (working backwards).
+
 ## Algorithm: Dijkstra
 
 // TODO
